@@ -8,9 +8,6 @@
     <Filter Include="RipeGrain">
       <UniqueIdentifier>{28f59aed-916f-4eef-ac67-52935a2199e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{a0c14720-4913-424b-993d-411fcfc88d1f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -18,12 +15,15 @@
     <Filter Include="RipeGrain\Header Files">
       <UniqueIdentifier>{12d16e70-8edd-4f3e-8801-d82be4d8ef39}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RipeGrain\Source Files">
+    <Filter Include="Libs">
+      <UniqueIdentifier>{5b2fb9f9-2be1-42c1-9548-19bc02b3219e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Libs">
-      <UniqueIdentifier>{5b2fb9f9-2be1-42c1-9548-19bc02b3219e}</UniqueIdentifier>
+    <Filter Include="RipeGrain\Source Files">
+      <UniqueIdentifier>{a0c14720-4913-424b-993d-411fcfc88d1f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -93,19 +93,37 @@
     <ClInclude Include="FireFlyeScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VideoReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RecordManagerModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FireFLyeLoadedScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonFireFlyeScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FireFlyePreviewEditorScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BaseScene.h">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FireFLyeLoadedScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RipeGrain\RepulsiveEngine\Image.cpp">
+      <Filter>RipeGrain\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RipeGrain\RepulsiveEngine\GDIPlusManager.cpp">
       <Filter>RipeGrain\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RipeGrain\RepulsiveEngine\Image.cpp">
-      <Filter>RipeGrain\Source Files</Filter>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

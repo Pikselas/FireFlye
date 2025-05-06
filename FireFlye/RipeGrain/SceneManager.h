@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include <utility>
 #include "SceneLayer.h"
 #include "SceneObject.h"
 #include "ObjectAnimator.h"
@@ -22,7 +23,7 @@ namespace RipeGrain
 		template<CScene T, typename... ParamsT>
 		void LoadScene(ParamsT&& ... params , std::function<void(Scene*)> deleter = [](Scene* s) {delete s; })
 		{
-			auto current_scene = new T(params...);
+			auto current_scene = new T(std::forward<ParamsT>(params)...);
 			current_scene->SetSceneLoader(this);
 			auto scene_event = CreateEventObject(std::move(EventSceneLoaded{ current_scene , deleter }));
 			RaiseEvent(std::move(scene_event));

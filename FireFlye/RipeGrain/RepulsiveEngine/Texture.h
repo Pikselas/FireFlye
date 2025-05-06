@@ -40,6 +40,26 @@ public:
 		graphics_device->CreateShaderResourceView(TEXTURE.Get(), nullptr, &TEXTURE_VIEW);
 	}
 public:
+	static Texture CreateFrom(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture)
+	{
+		Texture result;
+		result.TEXTURE = texture;
+
+		Microsoft::WRL::ComPtr<ID3D11Device> device;
+		texture->GetDevice(&device);
+
+		if (FAILED(device->CreateShaderResourceView(texture.Get(), nullptr, &result.TEXTURE_VIEW)))
+		{
+			throw std::runtime_error("Failed to create shader resource view");
+		}
+
+		D3D11_TEXTURE2D_DESC desc = {};
+		texture->GetDesc(&desc);
+		result.width = desc.Width;
+		result.height = desc.Height;
+		return result;
+	}
+public:
 	ID3D11ShaderResourceView* GetResourceView() const
 	{
 		return TEXTURE_VIEW.Get();

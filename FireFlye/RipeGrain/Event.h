@@ -36,9 +36,11 @@ namespace RipeGrain
 			Move,
 			Wheel,
 			LeftPress, 
+			LeftRelease,
 			RightPress,
+			RightRelease,
 			LeftDoublePress,
-			RightDoublePress
+			RightDoublePress,
 		};
 		Type type;
 		int delta;

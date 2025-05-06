@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 #include "RipeGrain/SceneManager.h"
 
 extern "C" __declspec(dllexport) void* GetScene();
@@ -12,6 +13,6 @@ public:
 	template<typename T, typename... ParamsT>
 	void LoadScene(ParamsT&& ... params)
 	{
-		GetSceneLoader()->LoadScene<T, ParamsT...>(params..., UnloadScene);
+		GetSceneLoader()->LoadScene<T, ParamsT...>(std::forward<ParamsT>(params)..., UnloadScene);
 	}
 };

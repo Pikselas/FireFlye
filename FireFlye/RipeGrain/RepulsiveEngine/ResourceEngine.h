@@ -4,6 +4,9 @@
 
 class ResourceEngine
 {
+	friend class ResourceEngineAccessor;
+protected:
+	Microsoft::WRL::ComPtr<ID3D11Device> graphics_device;
 public:
 	virtual StencilBuffer CreateStencilBuffer(unsigned int width, unsigned int height) = 0;
 	virtual Texture CreateTexture(const Image& image) = 0;

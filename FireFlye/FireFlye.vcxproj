@@ -135,7 +135,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CommonFireFlyeScene.h" />
+    <ClInclude Include="FireFLyeLoadedScene.h" />
+    <ClInclude Include="FireFlyePreviewEditorScene.h" />
     <ClInclude Include="FireFlyeScene.h" />
+    <ClInclude Include="RecordManagerModule.h" />
     <ClInclude Include="RipeGrain\Audio.h" />
     <ClInclude Include="RipeGrain\BoxCollider.h" />
     <ClInclude Include="RipeGrain\EngineComponent.h" />
@@ -157,8 +161,10 @@
     <ClInclude Include="RipeGrain\SceneObject.h" />
     <ClInclude Include="RipeGrain\UIComponent.h" />
     <ClInclude Include="RipeGrain\UILayer.h" />
+    <ClInclude Include="VideoReader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FireFLyeLoadedScene.cpp" />
     <ClCompile Include="RipeGrain\RepulsiveEngine\GDIPlusManager.cpp" />
     <ClCompile Include="RipeGrain\RepulsiveEngine\Image.cpp" />
     <ClCompile Include="BaseScene.h" />

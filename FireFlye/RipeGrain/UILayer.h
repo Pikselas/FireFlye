@@ -71,7 +71,7 @@ namespace RipeGrain
 		UILayer* layer = nullptr;
 	};
 
-	std::unique_ptr<Event> CreateUIRegisterEvent(UILayer* layer)
+	inline std::unique_ptr<Event> CreateUIRegisterEvent(UILayer* layer)
 	{
 		return CreateEventObject<EventRegisterUI>(EventRegisterUI{ layer });
 	}
