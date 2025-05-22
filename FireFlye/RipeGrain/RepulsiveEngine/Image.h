@@ -3,6 +3,8 @@
 #include<memory>
 #include<filesystem>
 #include<type_traits>
+#include<wrl.h>
+#include<span>
 #include"GDIPlusManager.h"
 
 struct ColorType
@@ -21,6 +23,7 @@ private:
 public:
 	Image(const std::filesystem::path& file);
 	Image(unsigned int width, unsigned height);
+	Image(std::span<char> source);
 	Image(const Image& img);
 	unsigned int GetHeight() const;
 	unsigned int GetWidth() const;
@@ -34,5 +37,9 @@ public:
 	const ColorType* Raw() const;
 public:
 	Image& operator=(const Image& img);
+private:
+	void static get_decoder_from_ext(const std::string& ext, CLSID& Clsid);
+public:
+	std::vector<char> SaveToBuffer(const std::string ext_type) const;
 	void Save(const std::filesystem::path& file) const;
 };

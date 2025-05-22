@@ -13,6 +13,32 @@ Image::Image(const std::filesystem::path& file) : bitmap(std::make_unique<Gdiplu
 Image::Image(unsigned int width,unsigned int height) : bitmap(std::make_unique<Gdiplus::Bitmap>(width,height,PixelFormat32bppARGB))
 {}
 
+Image::Image(std::span<char> source)
+{
+	Microsoft::WRL::ComPtr<IStream> stream;
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, source.size());
+	if (!hGlobal) 
+	{
+		throw std::runtime_error("failed to creat global");
+	}
+
+	void* pBuffer = GlobalLock(hGlobal);
+	if (!pBuffer) 
+	{
+		GlobalFree(hGlobal);
+		throw std::runtime_error("failed to lock global");
+	}
+	memcpy(pBuffer, source.data(), source.size());
+	GlobalUnlock(hGlobal);
+
+	if (FAILED(CreateStreamOnHGlobal(hGlobal, TRUE, &stream))) 
+	{
+		GlobalFree(hGlobal);
+		throw std::runtime_error("failed to create stream on global");
+	}
+	bitmap = std::make_unique<Gdiplus::Bitmap>(stream.Get());
+}
+
 Image::Image(const Image& img) : Image(img.GetWidth(), img.GetHeight())
 {
 	*this = img;
@@ -102,12 +128,11 @@ Image& Image::operator=(const Image& img)
 	return *this;
 }
 
-void Image::Save(const std::filesystem::path& file) const
+void Image::get_decoder_from_ext(const std::string& ext, CLSID& Clsid)
 {
-	CLSID Clsid;
 	HRESULT hResult;
-	
-	if (auto ext = file.extension(); ext == ".png")
+
+	if (ext == ".png")
 	{
 		hResult = CLSIDFromString(L"{557CF406-1A04-11D3-9A73-0000F81EF32E}", &Clsid);
 	}
@@ -132,7 +157,44 @@ void Image::Save(const std::filesystem::path& file) const
 	{
 		throw std::runtime_error("Failed to get Encoder");
 	}
+}
 
+std::vector<char> Image::SaveToBuffer(const std::string ext_type) const
+{
+	std::vector<char> buffer;
+	CLSID Clsid;
+	get_decoder_from_ext(ext_type, Clsid);
+	Microsoft::WRL::ComPtr<IStream> istream;
+
+	if (CreateStreamOnHGlobal(NULL, TRUE, &istream) != S_OK)
+	{
+
+	}
+	if (bitmap->Save(istream.Get(), &Clsid) != Gdiplus::Status::Ok)
+	{
+		throw std::runtime_error("Failed to save to stream");
+	}
+
+	HGLOBAL hg = NULL;
+	if (GetHGlobalFromStream(istream.Get(), &hg) != S_OK)
+	{
+		throw std::runtime_error("Failed to get global from stream");
+	}
+
+	int bufsize = GlobalSize(hg);
+	buffer.resize(bufsize);
+
+	LPVOID ptr = GlobalLock(hg);
+	if(ptr != nullptr)
+		memcpy(buffer.data(), ptr, bufsize);
+	GlobalUnlock(hg);
+	return buffer;
+}
+
+void Image::Save(const std::filesystem::path& file) const
+{
+	CLSID Clsid;
+	get_decoder_from_ext(file.extension().string(), Clsid);
 	auto status = bitmap->Save(file.wstring().c_str(),&Clsid);
 
 	if (status != Gdiplus::Status::Ok)
