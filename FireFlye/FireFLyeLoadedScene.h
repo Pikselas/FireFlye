@@ -1,6 +1,7 @@
 #pragma once
 #include "CommonFireFLyeScene.h"
 #include "FireFLyePreviewEditorScene.h"
+#include "FireFlyePreviewViewerScene.h"
 
 class FireFlyePreviewEditorScene;
 

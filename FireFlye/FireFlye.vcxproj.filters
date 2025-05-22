@@ -108,6 +108,9 @@
     <ClInclude Include="FireFlyePreviewEditorScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FireFlyePreviewViewerScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseScene.h">

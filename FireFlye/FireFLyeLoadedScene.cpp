@@ -82,7 +82,8 @@ void FireFLyeLoadedScene::AddRecordFilePanel(int manager_indx, int id, const std
 				break;
 			case PanelInteractionMode::Clicked:
 				//MarkPathInExplorer(str);
-				LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), current_active_db_index, str);
+				//LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), current_active_db_index , id , str);
+				LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), current_active_db_index, id);
 				break;
 			case PanelInteractionMode::RightClicked:
 				/*LoadScene<FireFlyePreviewEditorScene>(loaded_databases[current_active_db_index] , str);*/

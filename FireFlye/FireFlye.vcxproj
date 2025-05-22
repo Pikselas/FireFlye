@@ -138,6 +138,7 @@
     <ClInclude Include="CommonFireFlyeScene.h" />
     <ClInclude Include="FireFLyeLoadedScene.h" />
     <ClInclude Include="FireFlyePreviewEditorScene.h" />
+    <ClInclude Include="FireFlyePreviewViewerScene.h" />
     <ClInclude Include="FireFlyeScene.h" />
     <ClInclude Include="RecordManagerModule.h" />
     <ClInclude Include="RipeGrain\Audio.h" />

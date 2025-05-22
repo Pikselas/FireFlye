@@ -17,10 +17,19 @@ private:
 	RipeGrain::ObjectsLayer video_layer;
 private:
 	RipeGrain::SceneObject video_frame_obj;
+private:
+	Image current_active_frame;
+	std::vector<Image> video_frames;
+private:
+	const int manager_index;
+	const int record_id;
 public:
-	FireFlyePreviewEditorScene(RecordManagerModule&& module, int record_index, std::wstring path)
+	FireFlyePreviewEditorScene(RecordManagerModule&& module, int manager_index, int record_id, std::wstring path)
 		:
-		manager_module(std::move(module)), path(path)
+		manager_module(std::move(module)), path(path),
+		current_active_frame(100 , 100),
+		manager_index(manager_index),
+		record_id(record_id)
 	{
 		//load_db(record_path.c_str(), record_path.length());
 	}
@@ -34,9 +43,9 @@ private:
 			video_layer.AddObject(&video_frame_obj);
 
 			reader.Open(path);
-			Image frame_img = reader.GetNextFrame()->GetImage();
-			auto video_frame_sprite = CreateSprite(frame_img);
-			auto scale_factor_x = 300.0f / (float)frame_img.GetWidth();
+			current_active_frame = reader.GetNextFrame()->GetImage();
+			auto video_frame_sprite = CreateSprite(current_active_frame);
+			auto scale_factor_x = 300.0f / (float)current_active_frame.GetWidth();
 
 			video_frame_sprite.SetPosition(DirectX::XMVectorSet(200, 250, 0, 0));
 			video_frame_sprite.SetTransformation(DirectX::XMMatrixScaling(scale_factor_x, scale_factor_x, 1.0f));
@@ -91,7 +100,8 @@ private:
 								auto frame = reader.GetNextFrame();
 								if (frame)
 								{
-									video_frame_obj.GetSprites().front().SetTexture(CreateTexture(frame->GetImage()));
+									current_active_frame = std::move(frame->GetImage());
+									video_frame_obj.GetSprites().front().SetTexture(CreateTexture(current_active_frame));
 									//panel->SetUITexture(CreateTexture(frame->GetImage()));
 								}
 							}
@@ -144,6 +154,7 @@ private:
 							});
 						scroll_height += (frame.GetHeight() * scale_factor) + 10;
 						captured_frame_panel->ScrollBy(-scroll_height);
+						video_frames.emplace_back(current_active_frame);
 					}
 				};
 
@@ -159,6 +170,12 @@ private:
 				{
 					if (ev.type == RipeGrain::EventMouseInput::Type::LeftPress)
 					{
+						for (auto& frame : video_frames)
+						{
+							auto img_buffer = frame.SaveToBuffer(".jpg");
+							manager_module.add_preview(manager_index, record_id, img_buffer.data(), img_buffer.size());
+						}
+						MessageBox(nullptr, "Frames saved", "SUCCESS", MB_ICONINFORMATION);
 						LoadScene<FireFLyeLoadedScene>(std::move(manager_module));
 					}
 				};
