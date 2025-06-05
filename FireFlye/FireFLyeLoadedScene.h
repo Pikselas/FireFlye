@@ -83,10 +83,17 @@ private:
 	void AddRecordFilePanel(int manager_indx, int id, const std::wstring& str, int x, int y);
 	void AddRecordFolderPanel(int manager_indx, int id, const std::wstring& str, int x, int y);
 	void AddPanel(const std::wstring& str, ImageSprite sprite, RipeGrain::UIComponent::UIPtr area, int x, int y, int width, int height, std::function<void(PanelInteractionMode)> callback);
+private:
+	void AddRecordPanelNext(int id, const std::wstring& full_path, int x, int y);
+	void AddRecordPanelWithPreview(int id, Image preview , const std::wstring& name, int x, int y);
 public:
 	void Initialize() override;
 private:
 	void CreateDbPanel(int index, const std::wstring& name);
 private:
 	void ActivateDbPanel(int index);
+private:
+	void change_active_panel(RipeGrain::UIComponent::UIPtr panel_ptr);
+	void on_record_search_by_name(const std::string& keyword);
+	void on_tag_search_by_name(const std::string& keyword);
 };

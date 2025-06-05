@@ -1,4 +1,5 @@
 #include "FireFLyeLoadedScene.h"
+#include <iostream>
 
 void FireFLyeLoadedScene::AddPanel(const std::wstring& str, ImageSprite sprite, RipeGrain::UIComponent::UIPtr area, int x, int y, int width, int height, std::function<void(PanelInteractionMode)> callback)
 {
@@ -49,6 +50,50 @@ void FireFLyeLoadedScene::AddPanel(const std::wstring& str, ImageSprite sprite, 
 				callback(PanelInteractionMode::RightClicked);
 			}
 		};
+}
+
+void FireFLyeLoadedScene::AddRecordPanelNext(int id, const std::wstring& full_path, int x, int y)
+{
+	Image panel_img{ 150 ,200 };
+	panel_img.Clear({ .b = 18 , .g = 13 , .r = 5 , .a = 150 });
+
+	panel_img.DrawString(std::filesystem::path{ full_path }.filename() , { .b = 100 , .g = 150 , .r = 25 }, 5, 150, cake_cafe_12);
+	auto record_panel = record_search_result_area->AddComponent(RipeGrain::UIComponentDescription
+		{
+			.position_x = x,
+			.position_y = y,
+			.ui_sprite = CreateSprite(panel_img)
+		});
+	record_panel->AddComponent(RipeGrain::UIComponentDescription
+		{
+			.position_x = 10,
+			.position_y = 10,
+			.ui_sprite = std::filesystem::is_directory(full_path) ? record_folder_panel_sprite : record_file_panel_sprite
+		});
+}
+
+void FireFLyeLoadedScene::AddRecordPanelWithPreview(int id, Image preview, const std::wstring& name, int x, int y)
+{
+	Image panel_img{ 150 ,200 };
+	panel_img.Clear({ .b = 18 , .g = 13 , .r = 5 , .a = 150 });
+	
+	auto aspect_ration = (float)preview.GetWidth() / (float)preview.GetHeight();
+	
+	if (preview.GetHeight() > preview.GetWidth())
+		preview.Resize((int)(150 * aspect_ration), 150);
+	else
+		preview.Resize(150, (int)(150 * aspect_ration));
+
+	panel_img.DrawImage(preview, std::abs(150 - (int)preview.GetWidth()) / 2, std::abs(150 - (int)preview.GetHeight()) / 2);
+	panel_img.DrawString(std::filesystem::path(name).filename().wstring(), {.b = 100 , .g = 150 , .r = 25}, 5, 150, cake_cafe_14);
+	
+
+	auto record_panel = record_search_result_area->AddComponent(RipeGrain::UIComponentDescription
+		{
+			.position_x = x,
+			.position_y = y,
+			.ui_sprite = CreateSprite(panel_img)
+		});
 }
 
 void FireFLyeLoadedScene::AddTagPanel(int id, const std::wstring& str, int x, int y)
@@ -199,35 +244,19 @@ void FireFLyeLoadedScene::Initialize()
 			else if (ev.type == RipeGrain::EventKeyBoardInput::Type::KeyPress && ev.key_code == VK_RETURN)
 			{
 
-				RecordManagerModule::FireDataList fire_data_list;
-				std::function<void(int, const std::wstring&, int, int)> create_panel;
+				current_active_search_result_area->Clear();
 				if (current_active_search_result_area == record_search_result_area)
 				{
-					auto str = convert_to_string(search_string);
-					fire_data_list = manager_module.search_record_by_name(current_active_db_index, str.c_str(), str.length());
+					/*fire_data_list = manager_module.search_record_by_name(current_active_db_index, str.c_str(), str.length());
 					create_panel = std::bind_front(&FireFLyeLoadedScene::AddRecordPanel, this, current_active_db_index);
-					selected_records.clear();
+					selected_records.clear();*/
+					on_record_search_by_name(convert_to_string(search_string));
+					
 				}
 				else if (current_active_search_result_area == tag_search_result_area)
 				{
-					auto str = convert_to_string(search_string);
-					fire_data_list = manager_module.search_tag_by_name(str.c_str(), str.length());
-					create_panel = std::bind_front(&FireFLyeLoadedScene::AddTagPanel, this);
-					selected_tags.clear();
+					on_tag_search_by_name(convert_to_string(search_string));
 				}
-				else
-				{
-					return;
-				}
-
-				current_active_search_result_area->Clear();
-
-				for (int i = 0; i < fire_data_list.len; ++i)
-				{
-					auto rec_name = std::string{ fire_data_list.data[i].name , fire_data_list.data[i].name + fire_data_list.data[i].len };
-					create_panel(fire_data_list.data[i].id, convert_to_wstring(rec_name), 20, 70 * i + 10);
-				}
-				manager_module.release_data_list(fire_data_list);
 			}
 		};
 	Image search_result_area_image(450, 350);
@@ -294,13 +323,11 @@ void FireFLyeLoadedScene::Initialize()
 	panel_checkbox_unchecked = CreateTexture(Image{ MEDIA_DIRECTORY + "icons8-unchecked-checkbox-30.png" });
 	panel_checkbox = CreateSprite(panel_checkbox_unchecked);
 
-	auto fn_change_active_panel = [this](RipeGrain::UIComponent::UIPtr panel_ptr, RipeGrain::EventMouseInput ev)
+	auto fn_change_active_panel = [this](RipeGrain::UIComponent::UIPtr target , RipeGrain::EventMouseInput ev)
 		{
 			if (ev.type == RipeGrain::EventMouseInput::Type::LeftPress)
 			{
-				current_active_search_result_area->Hidden = true;
-				panel_ptr->Hidden = false;
-				current_active_search_result_area = panel_ptr;
+				change_active_panel(target);
 			}
 		};
 
@@ -521,4 +548,44 @@ void FireFLyeLoadedScene::ActivateDbPanel(int index)
 	current_active_db_index = index;
 	record_search_result_area->Clear();
 	selected_records.clear();
+}
+
+void FireFLyeLoadedScene::change_active_panel(RipeGrain::UIComponent::UIPtr panel_ptr)
+{
+	current_active_search_result_area->Hidden = true;
+	panel_ptr->Hidden = false;
+	current_active_search_result_area = panel_ptr;
+}
+
+void FireFLyeLoadedScene::on_record_search_by_name(const std::string& keyword)
+{
+	selected_records.clear();
+	auto data_list = manager_module.search_record_with_preview_by_name(current_active_db_index, keyword.c_str(), keyword.length());
+	for (int i = 0; i < data_list.len; ++i)
+	{
+		auto rec_name = std::string{ data_list.data[i].name ,  (ULONG)data_list.data[i].len };
+		ImageSprite prev;
+		if (data_list.data[i].preview_len != 0)
+		{
+			AddRecordPanelWithPreview(data_list.data[i].id, Image(std::span<char>(data_list.data[i].preview, data_list.data[i].preview_len)), convert_to_wstring(rec_name), 10, i * 210);
+		}
+		else
+		{
+			AddRecordPanelNext(data_list.data[i].id, convert_to_wstring(rec_name), 10, i * 210);
+		}
+	}
+	manager_module.release_record_preview_list(data_list);
+}
+
+void FireFLyeLoadedScene::on_tag_search_by_name(const std::string& keyword)
+{
+	selected_tags.clear();
+	RecordManagerModule::FireDataList fire_data_list;
+	fire_data_list = manager_module.search_tag_by_name(keyword.c_str(), keyword.length());
+	for (int i = 0; i < fire_data_list.len; ++i)
+	{
+		auto rec_name = std::string{ fire_data_list.data[i].name , fire_data_list.data[i].name + fire_data_list.data[i].len };
+		AddTagPanel(fire_data_list.data[i].id, convert_to_wstring(rec_name), 20, 70 * i + 10);
+	}
+	manager_module.release_data_list(fire_data_list);
 }
