@@ -120,6 +120,14 @@ const ColorType* Image::Raw() const
 	return static_cast<ColorType*>(data.Scan0);
 }
 
+void Image::Resize(int width, int height)
+{
+	auto newBitmap = std::make_unique<Gdiplus::Bitmap>(width, height, PixelFormat32bppARGB);
+	Gdiplus::Graphics graphics(newBitmap.get());
+	graphics.DrawImage(bitmap.get(), 0, 0, width, height);
+	bitmap = std::move(newBitmap);
+}
+
 Image& Image::operator=(const Image& img)
 {
 	bitmap = std::make_unique<Gdiplus::Bitmap>(img.GetWidth(), img.GetHeight(), PixelFormat32bppARGB);

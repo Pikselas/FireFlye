@@ -36,6 +36,8 @@ public:
 	ColorType* Raw();
 	const ColorType* Raw() const;
 public:
+	void Resize(int width , int height);
+public:
 	Image& operator=(const Image& img);
 private:
 	void static get_decoder_from_ext(const std::string& ext, CLSID& Clsid);
