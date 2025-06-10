@@ -43,21 +43,69 @@ void FireFLyeLoadedScene::AddPanel(const std::wstring& str, ImageSprite sprite, 
 		{
 			if (ev.type == RipeGrain::EventMouseInput::Type::LeftDoublePress)
 			{
-				callback(PanelInteractionMode::Clicked);
+				callback(PanelInteractionMode::LeftDoubleClicked);
 			}
 			else if (ev.type == RipeGrain::EventMouseInput::Type::RightDoublePress)
 			{
-				callback(PanelInteractionMode::RightClicked);
+				callback(PanelInteractionMode::RightDoubleClicked);
 			}
 		};
 }
 
-void FireFLyeLoadedScene::AddRecordPanelNext(int id, const std::wstring& full_path, int x, int y)
+void FireFLyeLoadedScene::AddRecordPanelOptions(RipeGrain::UIComponent::UIPtr panel_component , std::function<void(PanelInteractionMode)> callback)
+{
+	auto chk_bx = panel_component->AddComponent(RipeGrain::UIComponentDescription
+		{
+			.position_x = 115,
+			.position_y = 5,
+			.ui_sprite = panel_checkbox
+		});
+
+	chk_bx->on_mouse = [chk_bx, checked = false , callback , this](RipeGrain::EventMouseInput ev) mutable
+		{
+			if (ev.type == RipeGrain::EventMouseInput::Type::LeftPress)
+			{
+				if (!checked)
+				{
+					callback(PanelInteractionMode::Checked);
+				}
+				else
+				{
+					callback(PanelInteractionMode::Unchecked);
+				}
+
+				chk_bx->SetUITexture(checked ? panel_checkbox_unchecked : panel_checkbox_checked);
+				checked = !checked;
+			}
+		};
+
+	panel_component->on_mouse = [this , callback](RipeGrain::EventMouseInput ev)
+		{
+			switch (ev.type)
+			{
+			case RipeGrain::EventMouseInput::Type::LeftPress:
+				callback(PanelInteractionMode::LeftClicked);
+				break;
+			case RipeGrain::EventMouseInput::Type::LeftDoublePress:
+				callback(PanelInteractionMode::LeftDoubleClicked);
+				break;
+			case RipeGrain::EventMouseInput::Type::RightPress:
+				callback(PanelInteractionMode::RightClicked);
+				break;
+			case RipeGrain::EventMouseInput::Type::RightDoublePress:
+				callback(PanelInteractionMode::RightDoubleClicked);
+				break;
+			break;
+			}
+		};
+}
+
+void FireFLyeLoadedScene::AddRecordPanelNext(int manager_index, int id, const std::filesystem::path& full_path, int x, int y)
 {
 	Image panel_img{ 150 ,200 };
 	panel_img.Clear({ .b = 18 , .g = 13 , .r = 5 , .a = 150 });
 
-	panel_img.DrawString(std::filesystem::path{ full_path }.filename() , { .b = 100 , .g = 150 , .r = 25 }, 5, 150, cake_cafe_12);
+	panel_img.DrawString(full_path.filename(), { .b = 100 , .g = 150 , .r = 25 }, 5, 150, cake_cafe_12);
 	auto record_panel = record_search_result_area->AddComponent(RipeGrain::UIComponentDescription
 		{
 			.position_x = x,
@@ -70,23 +118,24 @@ void FireFLyeLoadedScene::AddRecordPanelNext(int id, const std::wstring& full_pa
 			.position_y = 10,
 			.ui_sprite = std::filesystem::is_directory(full_path) ? record_folder_panel_sprite : record_file_panel_sprite
 		});
+	AddRecordPanelOptions(record_panel , std::bind_front(&FireFLyeLoadedScene::on_record_panel_interaction , this , manager_index , id , full_path));
 }
 
-void FireFLyeLoadedScene::AddRecordPanelWithPreview(int id, Image preview, const std::wstring& name, int x, int y)
+void FireFLyeLoadedScene::AddRecordPanelWithPreview(int manager_index , int id, Image preview, const std::filesystem::path& full_path, int x, int y)
 {
 	Image panel_img{ 150 ,200 };
 	panel_img.Clear({ .b = 18 , .g = 13 , .r = 5 , .a = 150 });
-	
-	auto aspect_ration = (float)preview.GetWidth() / (float)preview.GetHeight();
-	
+
+	auto aspect_ratio = (float)preview.GetWidth() / (float)preview.GetHeight();
+
 	if (preview.GetHeight() > preview.GetWidth())
-		preview.Resize((int)(150 * aspect_ration), 150);
+		preview.Resize((int)(150 * aspect_ratio), 150);
 	else
-		preview.Resize(150, (int)(150 * aspect_ration));
+		preview.Resize(150, (int)(150 * aspect_ratio));
 
 	panel_img.DrawImage(preview, std::abs(150 - (int)preview.GetWidth()) / 2, std::abs(150 - (int)preview.GetHeight()) / 2);
-	panel_img.DrawString(std::filesystem::path(name).filename().wstring(), {.b = 100 , .g = 150 , .r = 25}, 5, 150, cake_cafe_14);
-	
+	panel_img.DrawString(full_path.filename().wstring(), { .b = 100 , .g = 150 , .r = 25 }, 5, 150, cake_cafe_14);
+
 
 	auto record_panel = record_search_result_area->AddComponent(RipeGrain::UIComponentDescription
 		{
@@ -94,6 +143,8 @@ void FireFLyeLoadedScene::AddRecordPanelWithPreview(int id, Image preview, const
 			.position_y = y,
 			.ui_sprite = CreateSprite(panel_img)
 		});
+
+	AddRecordPanelOptions(record_panel, std::bind_front(&FireFLyeLoadedScene::on_record_panel_interaction, this, manager_index, id, full_path));
 }
 
 void FireFLyeLoadedScene::AddTagPanel(int id, const std::wstring& str, int x, int y)
@@ -125,7 +176,7 @@ void FireFLyeLoadedScene::AddRecordFilePanel(int manager_indx, int id, const std
 			case PanelInteractionMode::Unchecked:
 				std::erase(selected_records, std::make_pair(manager_indx, id));
 				break;
-			case PanelInteractionMode::Clicked:
+			case PanelInteractionMode::LeftClicked:
 				//MarkPathInExplorer(str);
 				//LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), current_active_db_index , id , str);
 				LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), current_active_db_index, id);
@@ -150,7 +201,7 @@ void FireFLyeLoadedScene::AddRecordFolderPanel(int manager_indx, int id, const s
 			case PanelInteractionMode::Unchecked:
 				std::erase(selected_records, std::make_pair(manager_indx, id));
 				break;
-			case PanelInteractionMode::Clicked:
+			case PanelInteractionMode::LeftClicked:
 				OpenFolderInsideExplorer(str);
 				break;
 			}
@@ -304,20 +355,23 @@ void FireFLyeLoadedScene::Initialize()
 	tag_panel_img.DrawImage(tag_img, 0, 10);
 	tag_panel_sprite = CreateSprite(tag_panel_img);
 
-	Image record_file_panel_img(300, 60);
+	/*Image record_file_panel_img(300, 60);
 	record_file_panel_img.Clear({ .b = 20 , .g = 20 , .r = 15 , .a = 200 });
 
 	Image record_folder_panel_img(300, 60);
-	record_folder_panel_img.Clear({ .b = 20 , .g = 20 , .r = 15 , .a = 200 });
+	record_folder_panel_img.Clear({ .b = 20 , .g = 20 , .r = 15 , .a = 200 });*/
 
 	Image folder_img(MEDIA_DIRECTORY + "icons8-mac-folder-35.png");
 	Image file_img(MEDIA_DIRECTORY + "icons8-file-35.png");
 
-	record_file_panel_img.DrawImage(file_img, 0, 10);
-	record_folder_panel_img.DrawImage(folder_img, 0, 10);
+	//record_file_panel_img.DrawImage(file_img, 0, 10);
+	//record_folder_panel_img.DrawImage(folder_img, 0, 10);
 
-	record_folder_panel_sprite = CreateSprite(record_folder_panel_img);
-	record_file_panel_sprite = CreateSprite(record_file_panel_img);
+	/*record_folder_panel_sprite = CreateSprite(record_folder_panel_img);
+	record_file_panel_sprite = CreateSprite(record_file_panel_img);*/
+
+	record_folder_panel_sprite = CreateSprite(folder_img);
+	record_file_panel_sprite = CreateSprite(file_img);
 
 	panel_checkbox_checked = CreateTexture(Image{ MEDIA_DIRECTORY + "icons8-checked-checkbox-30.png" });
 	panel_checkbox_unchecked = CreateTexture(Image{ MEDIA_DIRECTORY + "icons8-unchecked-checkbox-30.png" });
@@ -563,15 +617,15 @@ void FireFLyeLoadedScene::on_record_search_by_name(const std::string& keyword)
 	auto data_list = manager_module.search_record_with_preview_by_name(current_active_db_index, keyword.c_str(), keyword.length());
 	for (int i = 0; i < data_list.len; ++i)
 	{
-		auto rec_name = std::string{ data_list.data[i].name ,  (ULONG)data_list.data[i].len };
+		auto rec_path = std::filesystem::path(data_list.data[i].name , data_list.data[i].name + data_list.data[i].len);
 		ImageSprite prev;
 		if (data_list.data[i].preview_len != 0)
 		{
-			AddRecordPanelWithPreview(data_list.data[i].id, Image(std::span<char>(data_list.data[i].preview, data_list.data[i].preview_len)), convert_to_wstring(rec_name), 10, i * 210);
+			AddRecordPanelWithPreview(current_active_db_index , data_list.data[i].id, Image(std::span<char>(data_list.data[i].preview, data_list.data[i].preview_len)), rec_path, 10, i * 210);
 		}
 		else
 		{
-			AddRecordPanelNext(data_list.data[i].id, convert_to_wstring(rec_name), 10, i * 210);
+			AddRecordPanelNext(current_active_db_index , data_list.data[i].id, rec_path, 10, i * 210);
 		}
 	}
 	manager_module.release_record_preview_list(data_list);
@@ -588,4 +642,22 @@ void FireFLyeLoadedScene::on_tag_search_by_name(const std::string& keyword)
 		AddTagPanel(fire_data_list.data[i].id, convert_to_wstring(rec_name), 20, 70 * i + 10);
 	}
 	manager_module.release_data_list(fire_data_list);
+}
+
+void FireFLyeLoadedScene::on_record_panel_interaction(int manager_index, int record_id, const std::filesystem::path& path, PanelInteractionMode in_mode)
+{
+	switch (in_mode)
+	{
+	case PanelInteractionMode::Checked:
+		break;
+	case PanelInteractionMode::Unchecked:
+		break;
+	case PanelInteractionMode::LeftDoubleClicked:
+		MarkPathInExplorer(path);
+		break;
+	case PanelInteractionMode::RightDoubleClicked:
+		break;
+	default:
+		break;
+	}
 }
