@@ -24,6 +24,7 @@ private:
 	LONGLONG timestamp = 0;
 private:
 	UINT32 width = 0, height = 0;
+	LONG stride = 0;
 	Microsoft::WRL::ComPtr<IMFSample> sample;
 public:
 	LONGLONG GetTimestamp() const
@@ -52,16 +53,26 @@ public:
 		// 5 * 3 = 15 => ...1111
 		// 15 + 3 = 18 => ...10010
 		// 18 & ~3 = 16 => ...10010 & ...11100 = ...10000 [16 % 4 = 0]
-		int stride = ((width * 3 + 3) & ~3);
+		//int stride_2 = ((width * 3 + 3) & ~3);
 		
 		Image img(width, height);
 		for (int j = 0; j < height; ++j)
 		{
-			// Source row (from bottom to top)
-			int srcRow = height - 1 - j;
-			BYTE* src = rgb24Data + srcRow * stride;
+			BYTE* src = nullptr;
+			if (stride < 0) {
+				// Bottom-up: first row is the last in memory
+				src = rgb24Data + (height - 1 - j) * (-stride);
+			}
+			else {
+				// Top-down: first row is the first in memory
+				src = rgb24Data + j * stride;
+			}
 
-			// Destination row (top to bottom)
+			// Ensure we don't read past the buffer
+			if ((src + width * 3) > (rgb24Data + bufferLength) || src < rgb24Data) {
+				break; // Prevent out-of-bounds read
+			}
+
 			for (int i = 0; i < width; ++i)
 			{
 				int idx = i * 3; // RGB24: 3 bytes per pixel
@@ -223,6 +234,10 @@ public:
 		frame.sample = rgb_sample;
 		frame.timestamp = timestamp;
 		current_timestamp = timestamp;
+
+		GUID subtype = { 0 };
+		THROW_ON_FAIL(rgb24_mediaType->GetGUID(MF_MT_SUBTYPE, &subtype) , "Failed to get subtype");
+		THROW_ON_FAIL(MFGetStrideForBitmapInfoHeader(subtype.Data1, width, &frame.stride), "Failed to get stride for bitmap info header");
 		return frame;
 	};
 	void SeekTo(unsigned long long dur)
