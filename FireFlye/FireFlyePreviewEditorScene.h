@@ -44,11 +44,12 @@ private:
 
 			reader.Open(path);
 			current_active_frame = reader.GetNextFrame()->GetImage();
+			resize_frame(current_active_frame , 300);
 			auto video_frame_sprite = CreateSprite(current_active_frame);
-			auto scale_factor_x = 300.0f / (float)current_active_frame.GetWidth();
+			//auto scale_factor_x = 300.0f / (float)current_active_frame.GetWidth();
 
 			video_frame_sprite.SetPosition(DirectX::XMVectorSet(200, 250, 0, 0));
-			video_frame_sprite.SetTransformation(DirectX::XMMatrixScaling(scale_factor_x, scale_factor_x, 1.0f));
+			//video_frame_sprite.SetTransformation(DirectX::XMMatrixScaling(scale_factor_x, scale_factor_x, 1.0f));
 
 			video_frame_obj.AddSprite(video_frame_sprite);
 
@@ -62,7 +63,7 @@ private:
 			Image seek_bar{ 350 , 10 };
 			seek_bar.Clear({ .b = 10 , .g = 10 , .r = 10 });
 
-			Image seek_knob{ MEDIA_DIRECTORY + "icons8-slider-20.png" };
+			Image seek_knob{ MEDIA_DIRECTORY / "icons8-slider-20.png" };
 
 			auto seek = ui_layer.AddUIFrame(RipeGrain::UIComponentDescription
 				{
@@ -101,6 +102,7 @@ private:
 								if (frame)
 								{
 									current_active_frame = std::move(frame->GetImage());
+									resize_frame(current_active_frame, 300);
 									video_frame_obj.GetSprites().front().SetTexture(CreateTexture(current_active_frame));
 									//panel->SetUITexture(CreateTexture(frame->GetImage()));
 								}
@@ -131,7 +133,7 @@ private:
 					}
 				};
 
-			Image capture_img{ MEDIA_DIRECTORY + "icons8-camera-48.png" };
+			Image capture_img{ MEDIA_DIRECTORY / "icons8-camera-48.png" };
 			auto capture_btn = ui_layer.AddUIFrame(RipeGrain::UIComponentDescription
 				{
 					.position_x = 425,
@@ -158,7 +160,7 @@ private:
 					}
 				};
 
-			Image save_img{ MEDIA_DIRECTORY + "icons8-save-48.png" };
+			Image save_img{ MEDIA_DIRECTORY / "icons8-save-48.png" };
 			auto save_btn = ui_layer.AddUIFrame(RipeGrain::UIComponentDescription
 				{
 					.position_x = 500,

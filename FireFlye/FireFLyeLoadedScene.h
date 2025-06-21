@@ -21,6 +21,8 @@ private:
 	Texture panel_checkbox_checked;
 	Texture panel_checkbox_unchecked;
 private:
+	ImageSprite preview_icon_sprite;
+private:
 	std::wstring search_string;
 private:
 	RipeGrain::UIComponent::UIPtr tag_search_result_area;
@@ -62,7 +64,7 @@ private:
 	RecordManagerModule manager_module;
 public:
 	FireFLyeLoadedScene() : FireFLyeLoadedScene(RecordManagerModule{}) {}
-    FireFLyeLoadedScene(RecordManagerModule&& module) : manager_module(std::move(module)), cake_cafe(MEDIA_DIRECTORY + "fonts/Cakecafe.ttf")
+    FireFLyeLoadedScene(RecordManagerModule&& module) : manager_module(std::move(module)), cake_cafe(MEDIA_DIRECTORY / "fonts/Cakecafe.ttf")
     {  
 		cake_cafe_10 = Font{ cake_cafe , 10 };
 		cake_cafe_12 = Font{ cake_cafe , 12 };
@@ -78,6 +80,7 @@ private:
 		RightClicked,
 		RightDoubleClicked,
 		Unchecked,
+		PreviewClicked
 	};
 private:
 	void AddTagPanel(int id, const std::wstring& str, int x, int y);

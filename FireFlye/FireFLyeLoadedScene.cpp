@@ -79,7 +79,22 @@ void FireFLyeLoadedScene::AddRecordPanelOptions(RipeGrain::UIComponent::UIPtr pa
 			}
 		};
 
-	panel_component->on_mouse = [this , callback](RipeGrain::EventMouseInput ev)
+	auto preview_icon = panel_component->AddComponent(RipeGrain::UIComponentDescription
+		{
+			.position_x = 115,
+			.position_y = 40,
+			.ui_sprite = preview_icon_sprite
+		});
+
+	preview_icon->on_mouse = [callback](RipeGrain::EventMouseInput ev)
+		{
+			if (ev.type == RipeGrain::EventMouseInput::Type::LeftPress)
+			{
+				callback(PanelInteractionMode::PreviewClicked);
+			}
+		};
+
+	panel_component->on_mouse = [callback](RipeGrain::EventMouseInput ev)
 		{
 			switch (ev.type)
 			{
@@ -92,12 +107,10 @@ void FireFLyeLoadedScene::AddRecordPanelOptions(RipeGrain::UIComponent::UIPtr pa
 			case RipeGrain::EventMouseInput::Type::RightPress:
 				callback(PanelInteractionMode::RightClicked);
 				break;
-			case RipeGrain::EventMouseInput::Type::RightDoublePress:
-				callback(PanelInteractionMode::RightDoubleClicked);
-				break;
-			break;
 			}
 		};
+
+
 }
 
 void FireFLyeLoadedScene::AddRecordPanelNext(int manager_index, int id, const std::filesystem::path& full_path, int x, int y)
@@ -126,12 +139,14 @@ void FireFLyeLoadedScene::AddRecordPanelWithPreview(int manager_index , int id, 
 	Image panel_img{ 150 ,200 };
 	panel_img.Clear({ .b = 18 , .g = 13 , .r = 5 , .a = 150 });
 
-	auto aspect_ratio = (float)preview.GetWidth() / (float)preview.GetHeight();
+	/*auto aspect_ratio = (float)preview.GetWidth() / (float)preview.GetHeight();
 
 	if (preview.GetHeight() > preview.GetWidth())
 		preview.Resize((int)(150 * aspect_ratio), 150);
 	else
-		preview.Resize(150, (int)(150 * aspect_ratio));
+		preview.Resize(150, (int)(150 / aspect_ratio));*/
+
+	resize_frame(preview, 150);
 
 	panel_img.DrawImage(preview, std::abs(150 - (int)preview.GetWidth()) / 2, std::abs(150 - (int)preview.GetHeight()) / 2);
 	panel_img.DrawString(full_path.filename().wstring(), { .b = 100 , .g = 150 , .r = 25 }, 5, 150, cake_cafe_14);
@@ -237,22 +252,22 @@ void FireFLyeLoadedScene::Initialize()
 		{
 			.position_x = 10,
 			.position_y = 5,
-			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY + "icons8-price-tag-100.png"})
+			.ui_sprite = CreateSprite(Image{ MEDIA_DIRECTORY / "icons8-price-tag-100.png"})
 		});
 	auto list_record_btn = menu->AddComponent(RipeGrain::UIComponentDescription
 		{
 			.position_x = 10,
 			.position_y = 110,
-			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY + "icons8-records-100.png"})
+			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY / "icons8-records-100.png"})
 		});
 	auto bind_record_btn = menu->AddComponent(RipeGrain::UIComponentDescription
 		{
 			.position_x = 10,
 			.position_y = 215,
-			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY + "icons8-link-100.png"})
+			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY / "icons8-link-100.png"})
 		});
 
-	Image search_icon_img(MEDIA_DIRECTORY + "icons8-search-bar-48.png");
+	Image search_icon_img(MEDIA_DIRECTORY / "icons8-search-bar-48.png");
 	Image search_area_img(300, 70);
 	search_area_img.Clear({ .b = 18 , .g = 13 , .r = 5 , .a = 150 });
 	search_area_img.DrawImage(search_icon_img, 5, 0);
@@ -350,7 +365,7 @@ void FireFLyeLoadedScene::Initialize()
 
 	Image tag_panel_img(200, 60);
 	tag_panel_img.Clear({ .b = 20 , .g = 20 , .r = 15 , .a = 200 });
-	Image tag_img(MEDIA_DIRECTORY + "icons8-tags-35.png");
+	Image tag_img(MEDIA_DIRECTORY / "icons8-tags-35.png");
 
 	tag_panel_img.DrawImage(tag_img, 0, 10);
 	tag_panel_sprite = CreateSprite(tag_panel_img);
@@ -361,8 +376,8 @@ void FireFLyeLoadedScene::Initialize()
 	Image record_folder_panel_img(300, 60);
 	record_folder_panel_img.Clear({ .b = 20 , .g = 20 , .r = 15 , .a = 200 });*/
 
-	Image folder_img(MEDIA_DIRECTORY + "icons8-mac-folder-35.png");
-	Image file_img(MEDIA_DIRECTORY + "icons8-file-35.png");
+	Image folder_img(MEDIA_DIRECTORY / "icons8-mac-folder-35.png");
+	Image file_img(MEDIA_DIRECTORY / "icons8-file-35.png");
 
 	//record_file_panel_img.DrawImage(file_img, 0, 10);
 	//record_folder_panel_img.DrawImage(folder_img, 0, 10);
@@ -373,9 +388,11 @@ void FireFLyeLoadedScene::Initialize()
 	record_folder_panel_sprite = CreateSprite(folder_img);
 	record_file_panel_sprite = CreateSprite(file_img);
 
-	panel_checkbox_checked = CreateTexture(Image{ MEDIA_DIRECTORY + "icons8-checked-checkbox-30.png" });
-	panel_checkbox_unchecked = CreateTexture(Image{ MEDIA_DIRECTORY + "icons8-unchecked-checkbox-30.png" });
+	panel_checkbox_checked = CreateTexture(Image{ MEDIA_DIRECTORY / "icons8-checked-checkbox-30.png" });
+	panel_checkbox_unchecked = CreateTexture(Image{ MEDIA_DIRECTORY / "icons8-unchecked-checkbox-30.png" });
 	panel_checkbox = CreateSprite(panel_checkbox_unchecked);
+
+	preview_icon_sprite = CreateSprite(Image{ MEDIA_DIRECTORY / "icons8-preview-30.png" });
 
 	auto fn_change_active_panel = [this](RipeGrain::UIComponent::UIPtr target , RipeGrain::EventMouseInput ev)
 		{
@@ -391,7 +408,7 @@ void FireFLyeLoadedScene::Initialize()
 
 	Image img_bind_add_panel(200, 150);
 	img_bind_add_panel.Clear({ .b = 170 , .g = 255 , .r = 23 , .a = 150 });
-	Image img_bind_add_icon(MEDIA_DIRECTORY + "icons8-add-70.png");
+	Image img_bind_add_icon(MEDIA_DIRECTORY / "icons8-add-70.png");
 
 	img_bind_add_panel.DrawImage(img_bind_add_icon, 100, 10);
 	img_bind_add_panel.DrawString(L"BIND SELECTED RECORDS", { .b = 4 , .g = 3 , .r = 15 }, 10, 120, cake_cafe_10);
@@ -405,7 +422,7 @@ void FireFLyeLoadedScene::Initialize()
 
 	Image img_bind_search_panel(200, 150);
 	img_bind_search_panel.Clear({ .b = 170 , .g = 255 , .r = 23 , .a = 150 });
-	Image img_bind_search_icon(MEDIA_DIRECTORY + "icons8-search-70.png");
+	Image img_bind_search_icon(MEDIA_DIRECTORY / "icons8-search-70.png");
 
 	img_bind_search_panel.DrawImage(img_bind_search_icon, 100, 10);
 	img_bind_search_panel.DrawString(L"SEARCH BY SELECTED TAGS", { .b = 4 , .g = 3 , .r = 15 }, 10, 120, cake_cafe_10);
@@ -486,7 +503,7 @@ void FireFLyeLoadedScene::Initialize()
 		{
 			.position_x = 570,
 			.position_y = 100,
-			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY + "icons8-add-row-48.png"})
+			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY / "icons8-add-row-48.png"})
 		});
 	add_new_record_btn->on_mouse = [this](RipeGrain::EventMouseInput ev)
 		{
@@ -528,7 +545,7 @@ void FireFLyeLoadedScene::Initialize()
 		{
 			.position_x = 20,
 			.position_y = 40,
-			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY + "icons8-add-to-database-40.png"})
+			.ui_sprite = CreateSprite(Image{MEDIA_DIRECTORY / "icons8-add-to-database-40.png"})
 		});
 
 	load_db_btn->on_mouse = [this](RipeGrain::EventMouseInput ev)
@@ -558,8 +575,8 @@ void FireFLyeLoadedScene::Initialize()
 
 void FireFLyeLoadedScene::CreateDbPanel(int index, const std::wstring& name)
 {
-	Image db_icon{ MEDIA_DIRECTORY + "icons8-registry-editor-35.png" };
-	Image db_panel_img{ 150 , 45 };
+	Image db_icon{ MEDIA_DIRECTORY / "icons8-registry-editor-35.png" };
+	Image db_panel_img{ 150 , 45 }; 
 	Image db_panel_active_img{ 150 , 45 };
 	db_panel_img.Clear({ .b = 20 , .g = 20 , .r = 15 , .a = 150 });
 	db_panel_active_img.Clear({ .b = 170 , .g = 255 , .r = 23 , .a = 150 });
@@ -649,13 +666,30 @@ void FireFLyeLoadedScene::on_record_panel_interaction(int manager_index, int rec
 	switch (in_mode)
 	{
 	case PanelInteractionMode::Checked:
+		selected_records.push_back(std::make_pair(manager_index, record_id));
 		break;
 	case PanelInteractionMode::Unchecked:
+		std::erase(selected_records, std::make_pair(manager_index, record_id));
 		break;
 	case PanelInteractionMode::LeftDoubleClicked:
-		MarkPathInExplorer(path);
+		if(std::filesystem::is_directory(path))
+			OpenFolderInsideExplorer(path);
+		else
+			MarkPathInExplorer(path);
 		break;
-	case PanelInteractionMode::RightDoubleClicked:
+	case PanelInteractionMode::RightClicked:
+		if(!std::filesystem::is_directory(path))
+			LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), manager_index, record_id, path);
+		else
+		{
+			if (auto file = ShowOpenFileDialogue({}, path.string().c_str()))
+			{
+				LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), manager_index, record_id, std::filesystem::path(*file));
+			}
+		}
+		break;
+	case PanelInteractionMode::PreviewClicked:
+		LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), manager_index, record_id);
 		break;
 	default:
 		break;

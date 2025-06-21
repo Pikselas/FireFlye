@@ -11,7 +11,9 @@
 #include "VideoReader.h"
 #include "RecordManagerModule.h"
 
-const std::string MEDIA_DIRECTORY = "./Resources/";
+
+const auto PROGRAM_DIRECTORY = std::filesystem::current_path();
+const auto MEDIA_DIRECTORY = PROGRAM_DIRECTORY / "Resources";
 
 class CommonFireFLyeScene : public BaseScene
 {
@@ -24,7 +26,7 @@ public:
 	void Initialize() override
 	{
 		SetViewPortSize(750, 650);
-		background.AddSprite(CreateSprite(Image{ MEDIA_DIRECTORY + "fireflyebg.jpg" }));
+		background.AddSprite(CreateSprite(Image{ MEDIA_DIRECTORY / "fireflyebg.jpg" }));
 		background.SetPosition(370, 250);
 		background_layer.AddObject(&background);
 		ui_layer.ui_clip_buffer = getCoreEngine().CreateStencilBuffer(750, 650);
@@ -107,17 +109,18 @@ inline std::optional<std::wstring> ShowOpenSaveFileDialogue() {
 // file_filter_map: key = file Type name, value = file extension (seperated by ';')
 // returns: file path if user selected a file, std::nullopt if user cancelled
 // example usage: std::optional<std::string> file_path = OpenFile("Select a file", { {"Text Files", "*.txt"}, {"All Files", "*.*"} });
-inline std::optional<std::string> ShowOpenFileDialogue(const std::initializer_list<std::pair<std::string, std::string>>& file_filter_map, HWND parent = nullptr)
+inline std::optional<std::string> ShowOpenFileDialogue(const std::initializer_list<std::pair<std::string, std::string>>& file_filter_map,const char* initial_dir = nullptr, HWND parent = nullptr)
 {
 	OPENFILENAME ofn;
 	//maximum length of a file name
 	char szFile[MAX_PATH];
-
+	auto initial_dir_length = initial_dir ? strlen(initial_dir) : 0;
+	memcpy(szFile, initial_dir, initial_dir_length);
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = parent;
 	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
+	ofn.lpstrFile[initial_dir_length] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
 	std::vector<char> file_filter_buffer;
 	for (auto& [type, ext] : file_filter_map)
@@ -152,4 +155,21 @@ inline void OpenFolderInsideExplorer(const std::filesystem::path& p)
 {
 	auto pa = p.string();
 	ShellExecute(nullptr, "open", pa.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
+}
+inline void resize_frame(Image& frame, unsigned int new_frame_box)
+{
+	auto frame_width = frame.GetWidth();
+	auto frame_height = frame.GetHeight();
+	auto aspect_ratio = (float)frame_width / (float)frame_height;
+	
+	if (aspect_ratio > 1.0f)
+	{
+		// width is greater than height
+		frame.Resize(150, (int)(150 / aspect_ratio));
+	}
+	else
+	{
+		// height is greater than width
+		frame.Resize((int)(new_frame_box * aspect_ratio), new_frame_box);
+	}
 }

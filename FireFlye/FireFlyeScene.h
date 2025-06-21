@@ -19,7 +19,7 @@ public:
 				.ui_sprite = CreateSprite(main_frame_img)
 			});
 
-		Image create_btn_image(MEDIA_DIRECTORY + "icons8-create-100.png");
+		Image create_btn_image(MEDIA_DIRECTORY / "icons8-create-100.png");
 		auto create_btn = main_frame->AddComponent(RipeGrain::UIComponentDescription
 			{
 				.position_x = 50,
@@ -27,7 +27,7 @@ public:
 				.ui_sprite = CreateSprite(create_btn_image)
 			});
 
-		Image load_btn_image(MEDIA_DIRECTORY + "icons8-folder-100.png");
+		Image load_btn_image(MEDIA_DIRECTORY / "icons8-folder-100.png");
 		auto load_btn = main_frame->AddComponent(RipeGrain::UIComponentDescription
 			{
 				.position_x = 200,

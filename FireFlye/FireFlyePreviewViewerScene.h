@@ -51,8 +51,14 @@ public:
 	{
 		if (ev.event_type_index == typeid(RipeGrain::EventMouseInput))
 		{
-			auto delta = RipeGrain::GetEventData<RipeGrain::EventMouseInput>(ev).delta;
-			ui_layer.Scroll(DirectX::XMVectorSet(0, delta * 5, 0, 0) , DirectX::XMVectorSet(0 , max_size , 0 , 1));
+			auto mouse_ev = RipeGrain::GetEventData<RipeGrain::EventMouseInput>(ev);
+			switch (mouse_ev.type)
+			{
+			case RipeGrain::EventMouseInput::Type::Wheel:
+				auto delta = mouse_ev.delta;
+				ui_layer.Scroll(DirectX::XMVectorSet(0, delta * 5, 0, 0), DirectX::XMVectorSet(0, max_size, 0, 1));
+			break;
+			}
 		}
 	}
 };
