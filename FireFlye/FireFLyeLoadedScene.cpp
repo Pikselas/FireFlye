@@ -194,7 +194,7 @@ void FireFLyeLoadedScene::AddRecordFilePanel(int manager_indx, int id, const std
 			case PanelInteractionMode::LeftClicked:
 				//MarkPathInExplorer(str);
 				//LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), current_active_db_index , id , str);
-				LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), current_active_db_index, id);
+				//LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), current_active_db_index, id);
 				break;
 			case PanelInteractionMode::RightClicked:
 				/*LoadScene<FireFlyePreviewEditorScene>(loaded_databases[current_active_db_index] , str);*/
@@ -678,18 +678,9 @@ void FireFLyeLoadedScene::on_record_panel_interaction(int manager_index, int rec
 			MarkPathInExplorer(path);
 		break;
 	case PanelInteractionMode::RightClicked:
-		if(!std::filesystem::is_directory(path))
-			LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), manager_index, record_id, path);
-		else
-		{
-			if (auto file = ShowOpenFileDialogue({}, path.string().c_str()))
-			{
-				LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), manager_index, record_id, std::filesystem::path(*file));
-			}
-		}
 		break;
 	case PanelInteractionMode::PreviewClicked:
-		LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), manager_index, record_id);
+		LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), manager_index, record_id , path);
 		break;
 	default:
 		break;
