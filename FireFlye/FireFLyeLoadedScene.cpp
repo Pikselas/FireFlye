@@ -193,8 +193,8 @@ void FireFLyeLoadedScene::AddRecordFilePanel(int manager_indx, int id, const std
 				break;
 			case PanelInteractionMode::LeftClicked:
 				//MarkPathInExplorer(str);
-				//LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), current_active_db_index , id , str);
-				//LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), current_active_db_index, id);
+				//LoadScene<FireFlyePreviewEditorScene>(std::move(RecordManagerModule::GetInstance()), current_active_db_index , id , str);
+				//LoadScene<FireFlyePreviewViewerScene>(std::move(RecordManagerModule::GetInstance()), current_active_db_index, id);
 				break;
 			case PanelInteractionMode::RightClicked:
 				/*LoadScene<FireFlyePreviewEditorScene>(loaded_databases[current_active_db_index] , str);*/
@@ -313,7 +313,7 @@ void FireFLyeLoadedScene::Initialize()
 				current_active_search_result_area->Clear();
 				if (current_active_search_result_area == record_search_result_area)
 				{
-					/*fire_data_list = manager_module.search_record_by_name(current_active_db_index, str.c_str(), str.length());
+					/*fire_data_list = RecordManagerModule::GetInstance().search_record_by_name(current_active_db_index, str.c_str(), str.length());
 					create_panel = std::bind_front(&FireFLyeLoadedScene::AddRecordPanel, this, current_active_db_index);
 					selected_records.clear();*/
 					on_record_search_by_name(convert_to_string(search_string));
@@ -451,14 +451,14 @@ void FireFLyeLoadedScene::Initialize()
 		{
 			if (ev.type == RipeGrain::EventMouseInput::Type::LeftPress)
 			{
-				auto fire_data_list = manager_module.search_record_by_tags(current_active_db_index, selected_tags.data(), selected_tags.size());
+				auto fire_data_list = RecordManagerModule::GetInstance().search_record_by_tags(current_active_db_index, selected_tags.data(), selected_tags.size());
 				record_search_result_area->Clear();
 				for (int i = 0; i < fire_data_list.len; ++i)
 				{
 					auto rec_name = std::string{ fire_data_list.data[i].name , fire_data_list.data[i].name + fire_data_list.data[i].len };
 					AddRecordPanel(current_active_db_index, fire_data_list.data[i].id, convert_to_wstring(rec_name), 20, 70 * i + 10);
 				}
-				manager_module.release_data_list(fire_data_list);
+				RecordManagerModule::GetInstance().release_data_list(fire_data_list);
 				current_active_search_result_area->Hidden = true;
 				current_active_search_result_area = record_search_result_area;
 				current_active_search_result_area->Hidden = false;
@@ -472,7 +472,7 @@ void FireFLyeLoadedScene::Initialize()
 				{
 					for (auto [db_id, record_id] : selected_records)
 					{
-						manager_module.bind_record_to_tag(db_id, record_id, tag_id);
+						RecordManagerModule::GetInstance().bind_record_to_tag(db_id, record_id, tag_id);
 					}
 				}
 			}
@@ -485,14 +485,14 @@ void FireFLyeLoadedScene::Initialize()
 				int curr_h = 0;
 				for (int db_i = 0; db_i < loaded_databases.size(); ++db_i)
 				{
-					auto fire_data_list = manager_module.search_record_by_tags(db_i, selected_tags.data(), selected_tags.size());
+					auto fire_data_list = RecordManagerModule::GetInstance().search_record_by_tags(db_i, selected_tags.data(), selected_tags.size());
 					for (int i = 0; i < fire_data_list.len; ++i)
 					{
 						auto rec_name = std::string{ fire_data_list.data[i].name , fire_data_list.data[i].name + fire_data_list.data[i].len };
 						AddRecordPanel(db_i, fire_data_list.data[i].id, convert_to_wstring(rec_name), 20, 70 * curr_h + 10);
 						++curr_h;
 					}
-					manager_module.release_data_list(fire_data_list);
+					RecordManagerModule::GetInstance().release_data_list(fire_data_list);
 				}
 				current_active_search_result_area->Hidden = true;
 				current_active_search_result_area = record_search_result_area;
@@ -513,12 +513,12 @@ void FireFLyeLoadedScene::Initialize()
 				{
 					auto path = ShowSelectFolderOrFileDialogue();
 					if (path)
-						manager_module.create_record(current_active_db_index, path->c_str(), path->length());
+						RecordManagerModule::GetInstance().create_record(current_active_db_index, path->c_str(), path->length());
 				}
 				else if (current_active_search_result_area == tag_search_result_area)
 				{
 					auto str = convert_to_string(search_string);
-					manager_module.create_tag(str.c_str(), str.length());
+					RecordManagerModule::GetInstance().create_tag(str.c_str(), str.length());
 					auto s = "ADDED TAG: " + str;
 					MessageBox(NULL, s.c_str(), "NEW TAG", MB_ICONEXCLAMATION);
 				}
@@ -556,21 +556,21 @@ void FireFLyeLoadedScene::Initialize()
 				if (p)
 				{
 					auto p_str = convert_to_string(*p);
-					manager_module.load_db(p_str.c_str(), p_str.length());
+					RecordManagerModule::GetInstance().load_db(p_str.c_str(), p_str.length());
 					CreateDbPanel(loaded_databases.size(), std::filesystem::path{ *p }.filename());
 					loaded_databases.push_back(p_str);
 				}
 			}
 		};
 
-	auto managers = manager_module.get_record_manager_list();
+	auto managers = RecordManagerModule::GetInstance().get_record_manager_list();
 	for (int i = 0; i < managers.len; ++i)
 	{
 		auto db_path = std::filesystem::path{ managers.data[i].name , managers.data[i].name + managers.data[i].len };
 		CreateDbPanel(i, db_path.filename());
 		loaded_databases.emplace_back(db_path.string());
 	}
-	manager_module.release_record_manager_list(managers);
+	RecordManagerModule::GetInstance().release_record_manager_list(managers);
 }
 
 void FireFLyeLoadedScene::CreateDbPanel(int index, const std::wstring& name)
@@ -631,7 +631,7 @@ void FireFLyeLoadedScene::change_active_panel(RipeGrain::UIComponent::UIPtr pane
 void FireFLyeLoadedScene::on_record_search_by_name(const std::string& keyword)
 {
 	selected_records.clear();
-	auto data_list = manager_module.search_record_with_preview_by_name(current_active_db_index, keyword.c_str(), keyword.length());
+	auto data_list = RecordManagerModule::GetInstance().search_record_with_preview_by_name(current_active_db_index, keyword.c_str(), keyword.length());
 	for (int i = 0; i < data_list.len; ++i)
 	{
 		auto rec_path = std::filesystem::path(data_list.data[i].name , data_list.data[i].name + data_list.data[i].len);
@@ -645,20 +645,20 @@ void FireFLyeLoadedScene::on_record_search_by_name(const std::string& keyword)
 			AddRecordPanelNext(current_active_db_index , data_list.data[i].id, rec_path, 10, i * 210);
 		}
 	}
-	manager_module.release_record_preview_list(data_list);
+	RecordManagerModule::GetInstance().release_record_preview_list(data_list);
 }
 
 void FireFLyeLoadedScene::on_tag_search_by_name(const std::string& keyword)
 {
 	selected_tags.clear();
 	RecordManagerModule::FireDataList fire_data_list;
-	fire_data_list = manager_module.search_tag_by_name(keyword.c_str(), keyword.length());
+	fire_data_list = RecordManagerModule::GetInstance().search_tag_by_name(keyword.c_str(), keyword.length());
 	for (int i = 0; i < fire_data_list.len; ++i)
 	{
 		auto rec_name = std::string{ fire_data_list.data[i].name , fire_data_list.data[i].name + fire_data_list.data[i].len };
 		AddTagPanel(fire_data_list.data[i].id, convert_to_wstring(rec_name), 20, 70 * i + 10);
 	}
-	manager_module.release_data_list(fire_data_list);
+	RecordManagerModule::GetInstance().release_data_list(fire_data_list);
 }
 
 void FireFLyeLoadedScene::on_record_panel_interaction(int manager_index, int record_id, const std::filesystem::path& path, PanelInteractionMode in_mode)
@@ -680,7 +680,7 @@ void FireFLyeLoadedScene::on_record_panel_interaction(int manager_index, int rec
 	case PanelInteractionMode::RightClicked:
 		break;
 	case PanelInteractionMode::PreviewClicked:
-		LoadScene<FireFlyePreviewViewerScene>(std::move(manager_module), manager_index, record_id , path);
+		LoadScene<FireFlyePreviewViewerScene>(manager_index, record_id , path);
 		break;
 	default:
 		break;

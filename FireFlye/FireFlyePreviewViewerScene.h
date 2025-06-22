@@ -7,8 +7,6 @@ class FireFLyeLoadedScene;
 class FireFlyePreviewViewerScene : public CommonFireFLyeScene
 {
 private:
-	RecordManagerModule manager_module;
-private:
 	const int manager_index;
 	const int record_id;
 private:
@@ -18,9 +16,8 @@ private:
 private:
 	const std::filesystem::path record_path;
 public:
-	FireFlyePreviewViewerScene(RecordManagerModule&& module, int manager_index, int record_id , const std::filesystem::path& record_path)
+	FireFlyePreviewViewerScene(int manager_index, int record_id , const std::filesystem::path& record_path)
 		:
-		manager_module(std::move(module)),
 		manager_index(manager_index),
 		record_id(record_id),
 		record_path(record_path)
@@ -45,7 +42,7 @@ public:
 					.ui_sprite = CreateSprite(Image{ MEDIA_DIRECTORY / "icons8-add-70.png" })
 				});
 
-			auto previews = manager_module.get_previews_by_record_id(manager_index, record_id);
+			auto previews = RecordManagerModule::GetInstance().get_previews_by_record_id(manager_index, record_id);
 			for (int i = 0; i < previews.len; ++i)
 			{
 				auto preview_sprite = CreateSprite(Image{ std::span<char>(previews.data[i].preview , previews.data[i].preview_len)});
@@ -57,19 +54,19 @@ public:
 					});
 				max_size += preview_sprite.GetHeight() + 10;
 			}
-			manager_module.release_record_preview_list(previews);
+			RecordManagerModule::GetInstance().release_record_preview_list(previews);
 
 			add_preview_btn->on_mouse = [this](RipeGrain::EventMouseInput ev)
 				{
 					if (ev.type == RipeGrain::EventMouseInput::Type::LeftPress)
 					{
 						if (!std::filesystem::is_directory(record_path))
-							LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), manager_index, record_id, record_path);
+							LoadScene<FireFlyePreviewEditorScene>(manager_index, record_id, record_path);
 						else
 						{
 							if (auto file = ShowOpenFileDialogue({}, record_path.string().c_str()))
 							{
-								LoadScene<FireFlyePreviewEditorScene>(std::move(manager_module), manager_index, record_id, std::filesystem::path(*file));
+								LoadScene<FireFlyePreviewEditorScene>(manager_index, record_id, std::filesystem::path(*file));
 							}
 						}
 					}

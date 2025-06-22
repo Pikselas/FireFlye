@@ -12,8 +12,6 @@ private:
 private:
 	VideoReader reader;
 private:
-	RecordManagerModule manager_module;
-private:
 	RipeGrain::ObjectsLayer video_layer;
 private:
 	RipeGrain::SceneObject video_frame_obj;
@@ -24,12 +22,12 @@ private:
 	const int manager_index;
 	const int record_id;
 public:
-	FireFlyePreviewEditorScene(RecordManagerModule&& module, int manager_index, int record_id, std::wstring path)
+	FireFlyePreviewEditorScene(int manager_index, int record_id, const std::filesystem::path& path)
 		:
-		manager_module(std::move(module)), path(path),
 		current_active_frame(100 , 100),
 		manager_index(manager_index),
-		record_id(record_id)
+		record_id(record_id),
+		path(path)
 	{
 		//load_db(record_path.c_str(), record_path.length());
 	}
@@ -175,10 +173,10 @@ private:
 						for (auto& frame : video_frames)
 						{
 							auto img_buffer = frame.SaveToBuffer(".jpg");
-							manager_module.add_preview(manager_index, record_id, img_buffer.data(), img_buffer.size());
+							RecordManagerModule::GetInstance().add_preview(manager_index, record_id, img_buffer.data(), img_buffer.size());
 						}
 						MessageBox(nullptr, "Frames saved", "SUCCESS", MB_ICONINFORMATION);
-						LoadScene<FireFLyeLoadedScene>(std::move(manager_module));
+						LoadScene<FireFLyeLoadedScene>();
 					}
 				};
 
@@ -186,7 +184,7 @@ private:
 		catch (const std::exception& e)
 		{
 			MessageBox(nullptr, e.what(), "FAILED", MB_ICONERROR);
-			LoadScene<FireFLyeLoadedScene>(std::move(manager_module));
+			LoadScene<FireFLyeLoadedScene>();
 		}
 	}
 };

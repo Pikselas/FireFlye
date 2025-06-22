@@ -60,11 +60,8 @@ private:
 private:
 	std::vector<std::string> loaded_databases;
 	std::vector<DbPanel> loaded_database_panels;
-private:
-	RecordManagerModule manager_module;
 public:
-	FireFLyeLoadedScene() : FireFLyeLoadedScene(RecordManagerModule{}) {}
-    FireFLyeLoadedScene(RecordManagerModule&& module) : manager_module(std::move(module)), cake_cafe(MEDIA_DIRECTORY / "fonts/Cakecafe.ttf")
+    FireFLyeLoadedScene() : cake_cafe(MEDIA_DIRECTORY / "fonts/Cakecafe.ttf")
     {  
 		cake_cafe_10 = Font{ cake_cafe , 10 };
 		cake_cafe_12 = Font{ cake_cafe , 12 };

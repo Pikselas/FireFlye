@@ -100,30 +100,24 @@ private:
 		get_previews_by_record_id = (fn_type_get_previews_by_record_id)GetProcAddress(runtime_manager_module, "get_previews_by_record_id");
 	}
 private:
-	RecordManagerModule& operator=(const RecordManagerModule& manager) = default;
-public:
-	RecordManagerModule& operator=(RecordManagerModule&& manager) noexcept
-	{
-		if (manager.runtime_manager_module != nullptr)
-		{
-			*this = manager;
-			manager.runtime_manager_module = nullptr;
-		}
-		return *this;
-	}
-public:
 	RecordManagerModule() : runtime_manager_module(nullptr)
 	{
 		load_manager_runtime();
 	}
-	RecordManagerModule(RecordManagerModule&& manager) noexcept
-	{
-		*this = std::move(manager);
-	}
-	RecordManagerModule(const RecordManagerModule& manager) = delete;
 	~RecordManagerModule()
 	{
 		if (runtime_manager_module != nullptr)
 			FreeLibrary(runtime_manager_module);
 	}
+private:
+	static RecordManagerModule manager_module;
+public:
+	static RecordManagerModule& GetInstance()
+	{
+		return manager_module;
+	}
+	RecordManagerModule& operator=(const RecordManagerModule&) = delete;
+	RecordManagerModule(const RecordManagerModule&) = delete;
 };
+
+inline RecordManagerModule RecordManagerModule::manager_module;
